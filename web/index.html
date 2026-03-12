@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Placas Tectónicas</title>
+    
+    <!-- CesiumJS -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.112/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.112/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Contenedor del Globo - Ocupa toda la pantalla -->
+    <div id="cesiumContainer"></div>
+    
+    <!-- UI Overlay -->
+    <div id="ui-container">
+        
+        <!-- Header minimalista flotante -->
+        <div class="header-float">
+            <div class="logo">
+                <span class="logo-icon">🌍</span>
+                <div class="logo-text">
+                    <h1>Simulador de Placas Tectónicas</h1>
+                    <span class="era-indicator" id="eraIndicator">Presente (0 Ma)</span>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button id="btn-reset" class="btn-icon" title="Vista inicial">🏠</button>
+                <button id="btn-rotate" class="btn-icon" title="Auto-rotar">🔄</button>
+                <button id="btn-layers" class="btn-icon" title="Capas">☰</button>
+            </div>
+        </div>
+
+        <!-- Panel de Capas - Flotante izquierda -->
+        <div class="panel-float panel-left" id="layersPanel">
+            <div class="panel-header">
+                <h3>🗂️ Capas</h3>
+                <button class="btn-close-panel" id="closeLayers">×</button>
+            </div>
+            <div class="panel-content">
+                <label class="layer-item">
+                    <input type="checkbox" id="layer-coastlines" checked>
+                    <span class="check-indicator"></span>
+                    <span class="layer-name">Líneas de costa</span>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layer-plates">
+                    <span class="check-indicator"></span>
+                    <span class="layer-name">Placas tectónicas (polígonos)</span>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layer-boundaries">
+                    <span class="check-indicator"></span>
+                    <span class="layer-name">Límites de placas</span>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layer-vectors">
+                    <span class="check-indicator"></span>
+                    <span class="layer-name">Vectores de movimiento</span>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layer-labels">
+                    <span class="check-indicator"></span>
+                    <span class="layer-name">Etiquetas de placas</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Panel de Búsqueda -->
+        <div class="panel-float panel-search" id="searchPanel">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar ciudad...">
+                <button id="btn-search">🔍</button>
+            </div>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+
+        <!-- Panel de Información - Flotante derecha -->
+        <div class="panel-float panel-right" id="infoPanel">
+            <div class="panel-header">
+                <h3 id="infoTitle">Presente</h3>
+                <button class="btn-close-panel" id="closeInfo">×</button>
+            </div>
+            <div class="panel-content info-content">
+                <p id="infoDesc" class="info-desc">Configuración actual de los continentes.</p>
+                
+                <div class="info-section">
+                    <h4>🌡️ Clima</h4>
+                    <p id="infoClimate">Período interglaciar con casquetes polares.</p>
+                </div>
+                
+                <div class="info-section">
+                    <h4>🦕 Fauna</h4>
+                    <p id="infoFauna">Era de los mamíferos.</p>
+                </div>
+                
+                <div class="info-section">
+                    <h4>⚡ Eventos</h4>
+                    <p id="infoEvents">Civilización humana.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline - Barra inferior flotante -->
+        <div class="timeline-float">
+            <div class="timeline-track">
+                <div class="timeline-labels">
+                    <span data-era="0" class="active">-350 Ma</span>
+                    <span data-era="1">-300</span>
+                    <span data-era="2">-250</span>
+                    <span data-era="3">-200</span>
+                    <span data-era="4">-150</span>
+                    <span data-era="5">-100</span>
+                    <span data-era="6">-50</span>
+                    <span data-era="7">0</span>
+                </div>
+                <input type="range" id="timeline" min="0" max="7" value="7" step="1">
+                <div class="timeline-markers">
+                    <div class="marker" data-index="0" title="Pangea Primitiva"></div>
+                    <div class="marker" data-index="1" title="Pangea"></div>
+                    <div class="marker" data-index="2" title="Pangea Tardía"></div>
+                    <div class="marker" data-index="3" title="Jurásico"></div>
+                    <div class="marker" data-index="4" title="Cretácico Medio"></div>
+                    <div class="marker" data-index="5" title="Cretácico Tardío"></div>
+                    <div class="marker" data-index="6" title="Eoceno"></div>
+                    <div class="marker active" data-index="7" title="Presente"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-screen" id="loading">
+            <div class="loading-content">
+                <div class="spinner">🌍</div>
+                <h2>Cargando Simulador</h2>
+                <p>Cargando datos geológicos...</p>
+                <div class="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div id="toast"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

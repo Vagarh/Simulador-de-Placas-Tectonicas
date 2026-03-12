@@ -1,4 +1,12 @@
-streamlit>=1.30.0
-pandas>=2.0.0
-geopandas>=0.14.0
-pydeck>=0.8.0
+# Simulador de Placas Tectónicas
+# Nota: La aplicación principal ahora es puramente web con Cesium.js
+# Estas dependencias son solo para procesamiento de datos geológicos (opcional)
+
+# Si necesitas procesar datos geológicos:
+# pandas>=2.0.0
+# geopandas>=0.14.0
+# numpy>=1.24.0
+
+# Para servir la aplicación localmente (cualquiera de estas opciones):
+# python -m http.server 8000
+# o instalar: pip install http-server
