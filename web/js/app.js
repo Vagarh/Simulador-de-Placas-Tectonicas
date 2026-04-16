@@ -15,6 +15,8 @@ class TectonicSimulator {
         this.markerEntity = null;
         this.isRotating = false;
         this.rotationInterval = null;
+        this.isPlaying = false;
+        this.playInterval = null;
         
         // Estado de capas
         this.layers = {
@@ -89,6 +91,14 @@ class TectonicSimulator {
             
             shouldAnimate: true
         });
+
+        // Improve camera navigation / map interaction defaults
+        this.viewer.scene.screenSpaceCameraController.enableCollisionDetection = true;
+        this.viewer.scene.screenSpaceCameraController.minimumZoomDistance = 1000000;
+        this.viewer.scene.screenSpaceCameraController.maximumZoomDistance = 35000000;
+        this.viewer.scene.screenSpaceCameraController.inertiaSpin = 0.9;
+        this.viewer.scene.screenSpaceCameraController.inertiaTranslate = 0.9;
+        this.viewer.scene.screenSpaceCameraController.inertiaZoom = 0.9;
 
         this.viewer.scene.globe.enableLighting = true;
         this.viewer.scene.globe.depthTestAgainstTerrain = true;
@@ -444,14 +454,21 @@ class TectonicSimulator {
 
         // Cerrar paneles
         document.getElementById('closeLayers').addEventListener('click', () => {
-            document.getElementById('layersPanel').style.opacity = '0';
-            document.getElementById('layersPanel').style.transform = 'translateX(-320px)';
+            this.closePanel('layersPanel');
         });
 
         document.getElementById('closeInfo').addEventListener('click', () => {
-            document.getElementById('infoPanel').style.opacity = '0';
-            document.getElementById('infoPanel').style.transform = 'translateX(320px)';
+            this.closePanel('infoPanel');
         });
+
+        // Mobile overlay click
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', () => {
+                this.closePanel('layersPanel');
+                this.closePanel('infoPanel');
+            });
+        }
 
         // Búsqueda
         document.getElementById('btn-search').addEventListener('click', () => {
@@ -461,6 +478,81 @@ class TectonicSimulator {
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.searchLocation();
         });
+
+        // Botón Play
+        document.getElementById('btn-play-timeline').addEventListener('click', () => {
+            this.togglePlay();
+        });
+
+        // Raycasting and Tooltip
+        this.setupRaycasting();
+    }
+
+    setupRaycasting() {
+        const handler = new Cesium.ScreenSpaceEventHandler(this.viewer.scene.canvas);
+
+        handler.setInputAction((movement) => {
+            const pickedObject = this.viewer.scene.pick(movement.endPosition);
+
+            if (Cesium.defined(pickedObject) && pickedObject.id) {
+                const entity = pickedObject.id;
+
+                // Si es un polígono de placa o línea de costa
+                if (entity.properties && entity.properties.plateName) {
+                    this.showToast(`Placa Tectónica: ${entity.properties.plateName.getValue()}`, 'info');
+                    document.body.style.cursor = 'pointer';
+                }
+                // Si es un límite
+                else if (entity.properties && entity.properties.boundaryName) {
+                    this.showToast(`Límite: ${entity.properties.boundaryName.getValue()} (${entity.properties.boundaryType.getValue()})`, 'info');
+                    document.body.style.cursor = 'pointer';
+                } else {
+                    document.body.style.cursor = 'default';
+                }
+            } else {
+                document.body.style.cursor = 'default';
+            }
+        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+        handler.setInputAction((movement) => {
+            const pickedObject = this.viewer.scene.pick(movement.position);
+
+            if (Cesium.defined(pickedObject) && pickedObject.id) {
+                const entity = pickedObject.id;
+                if (entity.properties && entity.properties.plateName) {
+                    // Update the panel with more info if needed on click
+                    const plateName = entity.properties.plateName.getValue();
+                    this.showToast(`Seleccionado: ${plateName}`, 'success');
+                }
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    }
+
+    togglePlay() {
+        this.isPlaying = !this.isPlaying;
+        const btnPlay = document.getElementById('btn-play-timeline');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+
+        if (this.isPlaying) {
+            btnPlay.classList.add('playing');
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+
+            this.playInterval = setInterval(() => {
+                let nextIndex = this.currentEraIndex + 1;
+                if (nextIndex > 7) {
+                    nextIndex = 0; // Loop back to start
+                }
+                document.getElementById('timeline').value = nextIndex;
+                this.loadEra(nextIndex);
+            }, 2000); // 2 seconds per era
+        } else {
+            btnPlay.classList.remove('playing');
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            clearInterval(this.playInterval);
+        }
     }
 
     updateTimelineMarkers(index) {
@@ -474,14 +566,41 @@ class TectonicSimulator {
 
     togglePanel(panelId) {
         const panel = document.getElementById(panelId);
-        const isVisible = panel.style.opacity !== '0' && panel.style.opacity !== '';
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+            const isVisible = panel.classList.contains('open');
+            // Close all first
+            this.closePanel('layersPanel');
+            this.closePanel('infoPanel');
+
+            if (!isVisible) {
+                panel.classList.add('open');
+                const overlay = document.getElementById('mobile-overlay');
+                if(overlay) overlay.classList.add('show');
+            }
+        } else {
+            const isVisible = panel.style.opacity !== '0' && panel.style.opacity !== '';
+            if (isVisible) {
+                this.closePanel(panelId);
+            } else {
+                panel.style.opacity = '1';
+                panel.style.transform = 'translateX(0)';
+            }
+        }
+    }
+
+    closePanel(panelId) {
+        const panel = document.getElementById(panelId);
+        const isMobile = window.innerWidth <= 768;
         
-        if (isVisible) {
+        if (isMobile) {
+            panel.classList.remove('open');
+            const overlay = document.getElementById('mobile-overlay');
+            if (overlay) overlay.classList.remove('show');
+        } else {
             panel.style.opacity = '0';
             panel.style.transform = panelId === 'layersPanel' ? 'translateX(-320px)' : 'translateX(320px)';
-        } else {
-            panel.style.opacity = '1';
-            panel.style.transform = 'translateX(0)';
         }
     }
 
