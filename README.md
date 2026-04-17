@@ -1,44 +1,57 @@
 # 🌍 Simulador de Placas Tectónicas
 
-![Simulador de Placas Tectónicas](screenshot.png)
+> Explora la historia geológica de la Tierra en un globo 3D interactivo — desde la Pangea hace 350 millones de años hasta el presente.
 
-> **Explora la Tierra desde Pangea hasta el presente** con datos geológicos reales y visualización 3D interactiva.
+## Demo
 
-Aplicación web interactiva para explorar la geografía de la Tierra a lo largo del tiempo geológico. Utiliza **Cesium.js** para mostrar un globo terráqueo 3D realista con imágenes satelitales de la NASA y datos de reconstrucción de placas de GPlates.
-
----
-
-## ✨ Características Principales
-
-- **🌐 Globo 3D Realista** - Imágenes satelitales de alta resolución de la NASA/USGS
-- **⏰ Viaje en el Tiempo** - Desde -350 Ma (Pangea Primitiva) hasta el Presente
-- **🔴 Placas Tectónicas** - Visualización de dorsales, fosas y fallas con datos científicos
-- **📍 Búsqueda de Ubicaciones** - Encuentra ciudades y su posición histórica
-- **🏃 Vectores de Movimiento** - Dirección y velocidad de las placas en tiempo real
-- **📚 Información Educativa** - Clima, fauna, flora y eventos de cada era
+![Demo del Simulador](./public/demo.webp)
 
 ---
 
-## 🚀 Demo en Vivo
+## ✨ Características
 
-Abre el archivo `web/index.html` en cualquier servidor web local:
+| Característica | Descripción |
+|---|---|
+| 🌐 **Globo 3D con texturas** | Renderizado con Cesium.js + imágenes satelitales de ArcGIS |
+| ⏰ **Línea de tiempo geológica** | Navega desde −350 Ma (Pangea) hasta hoy |
+| 🔴 **Límites de placas** | Dorsales, fosas de subducción y fallas transformantes |
+| 🌊 **Líneas de costa históricas** | GeoJSON de GPlates para cada era |
+| 📍 **Búsqueda de ciudades** | Encuentra dónde estaba tu ciudad en el pasado |
+| 🏃 **Vectores de movimiento** | Dirección y velocidad de cada placa en cm/año |
+| 📚 **Info científica** | Clima, fauna, flora y hitos por era; link directo a Wikipedia |
+| 🔄 **Auto-rotación** | El globo rota al cargar; se detiene al interactuar |
+
+---
+
+## 🚀 Inicio Rápido
 
 ```bash
-cd web
-python3 -m http.server 8000
+# Instalar dependencias
+npm install
+
+# Servidor de desarrollo local
+npm run dev
+# → Abre http://localhost:3000
 ```
 
-Luego visita: **http://localhost:8000**
+> **Para producción** (Vercel):
+> ```bash
+> npm run build
+> ```
 
 ---
 
-## 🛠️ Tecnologías
+## 🛠️ Stack Tecnológico
 
-| Tecnología | Uso |
-|------------|-----|
-| [Cesium.js](https://cesium.com/) | Globo 3D con imágenes satelitales |
-| [GPlates Web Service](https://gws.gplates.org/) | Datos de reconstrucción de placas |
-| HTML5/CSS3/ES6+ | Interfaz de usuario moderna |
+| Capa | Tecnología |
+|---|---|
+| Framework | [Next.js 16](https://nextjs.org) (App Router) |
+| Motor 3D | [Cesium.js 1.112](https://cesium.com) via CDN |
+| Imágenes base | ArcGIS World Imagery (libre) |
+| Estilos | Tailwind CSS + CSS Variables (UI/UX Pro Max) |
+| Lenguaje | TypeScript |
+| Datos GeoJSON | [GPlates](https://www.gplates.org/) |
+| Deploy | [Vercel](https://vercel.com) |
 
 ---
 
@@ -46,179 +59,54 @@ Luego visita: **http://localhost:8000**
 
 ```
 Simulador-de-Placas-Tectonicas/
-├── web/                      # Aplicación web principal
-│   ├── index.html           # Página principal
-│   ├── css/style.css        # Estilos
-│   ├── js/app.js            # Lógica de Cesium
-│   ├── js/data.js           # Datos geológicos
-│   └── data/                # GeoJSON de continentes
-│       ├── coastlines_present.json
-│       ├── coastlines_50ma.json
-│       ├── coastlines_100ma.json
-│       ├── coastlines_150ma.json
-│       ├── coastlines_200ma.json
-│       ├── coastlines_250ma.json
-│       ├── coastlines_300ma.json
-│       └── coastlines_350ma_pangea.json
-├── screenshot.png           # Captura del proyecto
-├── start.sh                 # Script para iniciar (Mac/Linux)
-├── start.bat                # Script para iniciar (Windows)
-└── README.md                # Este archivo
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx       # Layout raíz con CDN Cesium + fuentes
+│   │   ├── page.tsx         # UI principal (glassmorphism dashboard)
+│   │   └── globals.css      # Design system (UI/UX Pro Max)
+│   ├── components/
+│   │   └── SimulatorInitializer.tsx  # Client-side Cesium init
+│   └── lib/
+│       ├── app.ts           # Lógica TectonicSimulator
+│       └── data.ts          # Datos de eras + placas + ubicaciones
+├── public/
+│   ├── data/                # GeoJSON de líneas de costa (8 eras)
+│   └── demo.webp            # Grabación demo
+└── README.md
 ```
 
 ---
 
-## 🎮 Uso
+## 🌐 Eras Geológicas Incluidas
 
-### Controles del Globo
-
-| Acción | Control |
-|--------|---------|
-| Rotar | Click izquierdo + arrastrar |
-| Zoom | Rueda del ratón |
-| Inclinar | Click derecho + arrastrar |
-| Pan | Click medio + arrastrar |
-
-### Línea de Tiempo Geológica
-
-Arrastra el slider para viajar entre eras:
-
-| Era | Tiempo | Descripción |
-|-----|--------|-------------|
-| 🌍 Pangea Primitiva | -350 Ma | Formación del supercontinente |
-| 🌍 Pangea | -300 Ma | Todos los continentes unidos |
-| 🌍 Pangea Tardía | -250 Ma | Comienzo de la fragmentación |
-| 🦕 Jurásico | -200 Ma | Apertura del Atlántico |
-| 🦕 Cretácico Medio | -150 Ma | Laurasia y Gondwana separados |
-| 🦕 Cretácico Tardío | -100 Ma | Dinosaurios dominantes |
-| 🐋 Eoceno | -50 Ma | Mamíferos diversificándose |
-| 🏙️ Presente | 0 Ma | Configuración actual |
-
-### Capas Disponibles
-
-- ✅ **Líneas de costa** - Continentes reconstruidos con datos reales
-- ✅ **Placas tectónicas** - Polígonos de las principales placas
-- ✅ **Límites de placas** - Dorsales (verde), convergentes (rojo), transformantes (amarillo)
-- ✅ **Vectores de movimiento** - Flechas de velocidad y dirección
-- ✅ **Etiquetas** - Nombres de las placas tectónicas
+| Era | Millones de años | Descripción |
+|---|---|---|
+| Pangea Primitiva | −350 Ma | Formación del supercontinente |
+| Pangea | −300 Ma | Pangea completamente unida |
+| Pangea Tardía | −250 Ma | Comienzo de la fragmentación |
+| Jurásico | −200 Ma | Apertura del Atlántico central |
+| Cretácico Medio | −150 Ma | Laurasia y Gondwana se separan |
+| Cretácico Tardío | −100 Ma | India migra rápidamente al norte |
+| Eoceno | −50 Ma | Colisión India–Asia, nace el Himalaya |
+| **Presente** | **0 Ma** | **Configuración actual** |
 
 ---
 
-## 🔬 Datos Científicos
+## 📊 Fuentes de Datos
 
-Las posiciones continentales se basan en:
-
-- **Modelos GPlates** - Reconstrucción de placas tectónicas ([gplates.org](https://www.gplates.org/))
-- **USGS** - Datos geológicos y geofísicos
-- **NASA** - Imágenes satelitales y datos de elevación
-- **Müller et al. 2019** - Modelo de reconstrucción global
-
-### Placas Tectónicas Incluidas
-
-| Placa | Velocidad | Dirección |
-|-------|-----------|-----------|
-| 🟤 Norteamérica | 2.3 cm/año | Oeste-Suroeste |
-| 🟢 Sudamérica | 3.0 cm/año | Oeste |
-| 🟠 Euroasiática | 2.1 cm/año | Este |
-| 🟢 África | 2.15 cm/año | Norte-Noreste |
-| 🟡 India | 6.0 cm/año | Norte |
-| 🟠 Australia | 6.0 cm/año | Noreste |
-| ⚪ Antártica | 1.0 cm/año | Estacionaria |
-| 🔵 Pacífico | 7.5 cm/año | Noroeste |
+- **GeoJSON de continentes**: [GPlates Community](https://www.gplates.org/)
+- **Imágenes satelitales**: ArcGIS World Imagery (Esri)
+- **Velocidades de placas**: USGS / publicaciones científicas de referencia
 
 ---
 
-## 🌍 Ubicaciones Disponibles
+## 🤝 Contribuir
 
-- Madrid, España
-- Nueva York, USA
-- Tokio, Japón
-- Sídney, Australia
-- Ciudad de México
-- Buenos Aires, Argentina
-- El Cairo, Egipto
-- Bogotá, Colombia
-- Londres, UK
-- Pekín, China
-- Y 10 ciudades más...
+1. Fork del repositorio
+2. Crea tu rama `feature/mi-mejora`
+3. Haz commit de tus cambios
+4. Abre un Pull Request
 
 ---
 
-## 🛠️ Desarrollo
-
-### Requisitos
-
-- Navegador web moderno (Chrome, Firefox, Safari, Edge)
-- Conexión a internet (para Cesium.js CDN y datos)
-
-### Servidor Local
-
-Cualquier servidor estático funciona:
-
-```bash
-# Python 3
-python -m http.server 8000
-
-# Node.js
-npx http-server
-
-# PHP
-php -S localhost:8000
-```
-
-O usa los scripts incluidos:
-
-```bash
-# Mac/Linux
-./start.sh
-
-# Windows
-start.bat
-```
-
----
-
-## 📚 Notas Importantes
-
-- Las posiciones continentales son **reconstrucciones científicas** basadas en modelos de placas
-- Las velocidades son promedios geológicos (no anuales exactos)
-- Los datos de límites de placas están simplificados para visualización
-- Las proyecciones futuras son especulativas basadas en velocidades actuales
-
----
-
-## 🐛 Solución de Problemas
-
-**El globo aparece negro:**
-- Verifica tu conexión a internet
-- Asegúrate de usar un servidor web (no file://)
-
-**Lentitud:**
-- Reduce el zoom
-- Desactiva capas innecesarias
-- Usa un navegador actualizado
-
----
-
-## 📄 Licencia
-
-MIT License - Ver [LICENSE](LICENSE) para más detalles.
-
----
-
-## 🙏 Créditos
-
-- **CesiumJS** - [cesium.com](https://cesium.com/)
-- **GPlates** - [gplates.org](https://www.gplates.org/)
-- **NASA Blue Marble** - Imágenes satelitales
-- **EarthByte Group** - Datos de reconstrucción de placas
-
----
-
-<div align="center">
-
-**Hecho con 🌍 para entusiastas de la geología y la programación.**
-
-*[Ver demo en vivo](http://localhost:8000)*
-
-</div>
+*Construido con ❤️ usando Cesium.js + Next.js*
